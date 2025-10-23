@@ -105,7 +105,18 @@
             animation: finalExplosion 1.0s ease-in forwards;
             animation-delay: 0.2s;
         }
-
+        
+        /* ====================
+           3.5. АНИМАЦИЯ ПУЛЬСАЦИИ ЛОГОТИПА (УМЕНЬШЕНАЯ)
+           ==================== */
+        @keyframes heartBeat {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            15% { transform: translate(-50%, -50%) scale(1.01); } /* Уменьшено: 1% увеличение */
+            30% { transform: translate(-50%, -50%) scale(1); }
+            45% { transform: translate(-50%, -50%) scale(1.02); } /* Уменьшено: 2% увеличение */
+            60% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
 
         /* ====================
            4. ФАЗА 2: БЕЛЫЙ ЭКРАН / КОНТЕНТ
@@ -144,14 +155,17 @@
             z-index: 1; 
     
             opacity: 0;
-            /* Убрана задержка, чтобы оно появлялось одновременно с main-content */
+            /* Плавное увеличение */
             transition: opacity 1.5s ease-out, transform 1.5s ease-out; 
             pointer-events: none;
         }
 
         .logo-wrapper.active {
             opacity: 1;
+            /* Плавное увеличение до 1 */
             transform: translate(-50%, -50%) scale(1); 
+            /* Пульсация начнется через 1.5 секунды, когда увеличение завершится */
+            animation: heartBeat 4s ease-in-out 1.5s infinite; 
         }
         
         .logo {
@@ -202,39 +216,7 @@
             transform: scale(0.98);
             box-shadow: 0 0 25px rgba(0, 0, 0, 0.7); /* Свечение при наведении */
         }
-        /* 1. Новая анимация затухания */
-        @keyframes fadeToTransparent {
-            0% { opacity: 0; }      /* Начинаем с невидимости */
-            5% { opacity: 0.1; }    /* Быстро доходим до 50% */
-            100% { opacity: 0.05; }  /* Плавно затухаем до 10% */
-        }
-        /* ====================
-   4.5. PNG-РАМКА (НОВЫЙ БЛОК)
-   ==================== */
-        .overlay-frame {
-            position: fixed; /* Фиксируем на экране */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-    
-    /* УКАЗЫВАЕТ НА ВАШ ФАЙЛ background1.png */
-            background-image: url('background3.png');
-            background-size: cover; 
-            background-repeat: no-repeat;
-            background-position: center;
-    
-            z-index: 10; /* <-- Слой рамки (между текстом и лого) */
-            pointer-events: none; /* Позволяет кликать сквозь рамку по кнопке */
-            opacity: 0; 
-            transition: opacity 1.5s ease-in-out 0.1s;
-        }
-
-        .overlay-frame.active {
-            animation: fadeToTransparent 3s ease-out forwards;
-        }
-        /* ==================== */
-
+        
         /* ====================
            5. МЕДИА-ЗАПРОСЫ (АДАПТИВНОСТЬ)
            ==================== */
@@ -253,7 +235,7 @@
             .logo-wrapper { 
                 width: 400px; 
                 height: 400px;
-                top: -10%; /* Сдвиг логотипа выше на маленьких экранах */
+                top: 10%; /* Сдвиг логотипа выше на маленьких экранах */
             }
             .final-word { font-size: 3.5rem; }
             .cta-button { padding: 15px 30px; font-size: 1rem; }
@@ -261,7 +243,7 @@
     </style>
 </head>
 <body>
-    <div class="overlay-frame" id="overlay-frame"></div>
+    
     <div class="intro-words" id="intro-words">
         <div class="word-container">
             <span class="typing-text" id="typing-text-target"></span>
@@ -298,7 +280,7 @@
             const introContainer = document.getElementById('intro-words');
             const mainContent = document.getElementById('main-content');
             const logo = document.getElementById('logo-wrapper');
-
+            
             const concepts = [
                 "AUTONOMY",
                 "YIELD",
@@ -314,55 +296,43 @@
                 const currentText = concepts[conceptIndex];
                 
                 if (!isDeleting) {
-                    // НАБОР: Добавляем символ
                     typingTarget.textContent = currentText.substring(0, charIndex + 1);
                     charIndex++;
                 } else {
-                    // УДАЛЕНИЕ: Убираем символ
                     typingTarget.textContent = currentText.substring(0, charIndex - 1);
                     charIndex--;
                 }
 
                 if (charIndex === currentText.length) {
-                    // Переключить на удаление
                     isDeleting = true;
-                    // Пауза перед удалением
                     setTimeout(typeWriter, 1000); 
                 } else if (isDeleting && charIndex === 0) {
-                    // Удаление завершено, переходим к следующему слову
                     isDeleting = false;
                     conceptIndex++;
                     
                     if (conceptIndex < concepts.length) {
-                        // Пауза перед набором следующего слова
                         setTimeout(typeWriter, 500); 
                     } else {
-                        // Все слова набраны, переходим к финальной фазе
                         setTimeout(startFinalPhase, 500);
                         return;
                     }
                 } else {
-                    // Продолжить набор/удаление
-                    const speed = isDeleting ? 50 : 100; // Быстрое удаление, медленный набор
+                    const speed = isDeleting ? 50 : 100;
                     setTimeout(typeWriter, speed);
                 }
             }
 
             // Функция Финальной 3D-Вспышки
             function startFinalPhase() {
-                // Скрываем курсор и контейнер набора
                 cursorTarget.style.display = 'none';
                 typingTarget.style.display = 'none';
                 
-                // Показываем финальное слово
                 finalWord.style.opacity = 1;
                 finalWord.style.fontSize = '5rem';
                 
-                // Запускаем 3D-анимацию и смену фона
                 setTimeout(() => {
                     finalWord.classList.add('explode');
                     
-                    // Резкий переход к белому фону и контенту
                     setTimeout(() => {
                         body.classList.add('white-phase');
                         introContainer.style.display = 'none';
@@ -370,10 +340,8 @@
                         // Лого и контент появляются одновременно
                         mainContent.classList.add('active');
                         logo.classList.add('active');
-                        // НОВАЯ СТРОКА: Активируем PNG-рамку
-                        document.getElementById('overlay-frame').classList.add('active');
                         
-                    }, 800); // Тайминг синхронизирован с CSS-анимацией finalExplosion
+                    }, 800);
 
                 }, 200);
             }
