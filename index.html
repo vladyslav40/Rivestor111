@@ -23,7 +23,6 @@
             position: relative;
             transition: background-color 0.5s ease-out; 
             flex-direction: column; 
-            cursor: none !important; 
         }
 
         /* ====================
@@ -60,69 +59,16 @@
         }
 
         /* ====================
-           1.2. КАСТОМНЫЙ КУРСОР (КРЕСТИК)
-           ==================== */
-        #custom-cursor {
-            width: 15px; 
-            height: 15px;
-            border: 1px solid #ffffff; 
-            position: fixed;
-            z-index: 10000;
-            pointer-events: none; 
-            transform: translate(-50%, -50%); 
-            transition: border-color 0.3s;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-            background-image: none;
-        }
-        #custom-cursor::before,
-        #custom-cursor::after {
-            content: '';
-            position: absolute;
-            background: #ffffff;
-        }
-        #custom-cursor::before {
-            width: 1px; height: 100%; left: 50%; top: 0; transform: translateX(-50%);
-        }
-        #custom-cursor::after {
-            width: 100%; height: 1px; top: 50%; left: 0; transform: translateY(-50%);
-        }
-
-        body.white-phase #custom-cursor {
-            border-color: #000000;
-            box-shadow: none; 
-        }
-        body.white-phase #custom-cursor::before,
-        body.white-phase #custom-cursor::after {
-            background: #000000;
-        }
-        
-        /* ТРАССИРОВКА КУРСОРА (Новый эффект) */
-        .cursor-trail {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #00bfff; /* Яркий голубой */
-            box-shadow: 0 0 10px #00bfff;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.5s, transform 0.5s;
-        }
-        
-        /* Общий контейнер для слов в первой фазе */
-        .intro-words {
-            position: absolute;
-            z-index: 100;
-        }
-
-        /* ====================
            1.3. ФОНОВОЕ СКАНИРОВАНИЕ
            ==================== */
         @keyframes scanlineMove {
             0% { background-position: 0 0; }
             100% { background-position: 0 100vh; }
+        }
+
+        .intro-words {
+            position: absolute;
+            z-index: 100;
         }
 
         .intro-words::before {
@@ -218,56 +164,71 @@
         }
 
         /* ====================
-           3.2. ФАЗА 1.5: РАЗРУШЕНИЕ FREEDOM
+           3.2. ФАЗА 1.5: ПЕРЕХОД RIVESTOR
            ==================== */
         .final-word {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            /* Фиксируем центрирование */
+            transform: translate(-50%, -50%); 
             font-size: 0; 
             font-weight: 900;
             text-transform: uppercase;
             color: #ffffff;
             z-index: 200;
             opacity: 0;
-            display: flex; /* Для деконструкции */
+            display: flex; 
+            transition: font-size 0.5s, opacity 0.5s; 
+            /* Чистый текст по умолчанию, без теней */
+            text-shadow: none; 
         }
-
-        /* Стиль для каждой буквы при разрушении */
-        .word-char {
-            display: inline-block;
-            opacity: 1;
-            transition: transform 1.5s, opacity 1.5s;
+        
+        /* АНИМАЦИЯ EPR GLITCH (Яркий Неон: #00CCFF и #FFCC00) */
+        @keyframes eprGlitch {
+            0% { text-shadow: 2px 0 0 #00CCFF, -2px 0 0 #FFCC00; }
+            20% { text-shadow: -3px 0 0 #00CCFF, 3px 0 0 #FFCC00; }
+            40% { text-shadow: 0 5px 0 #00CCFF, 0 -5px 0 #FFCC00; }
+            60% { text-shadow: -1px 0 0 #00CCFF, 1px 0 0 #FFCC00; }
+            80% { text-shadow: 4px 0 0 #00CCFF, -4px 0 0 #FFCC00; }
+            100% { text-shadow: 0 0 0 #00CCFF, 0 0 0 #FFCC00; }
         }
-
-        .final-word.deconstruct .word-char {
-            animation: deconstructChar 1.5s forwards;
+        
+        .final-word.glitching {
+            /* Применяем только анимацию цветового сдвига */
+            animation: eprGlitch 0.2s infinite alternate; 
+            /* Добавим фильтр для небольшого дрожания без смещения */
+            filter: blur(0.5px) contrast(1.2); 
+            transition: none; /* Отключаем плавный переход для глитча */
         }
-
-        @keyframes deconstructChar {
+        
+        /* НОВАЯ АНИМАЦИЯ: Вход в экран (портал) */
+        @keyframes enterPortal {
             0% { 
                 opacity: 1;
-                transform: translate(0, 0) scale(1);
+                transform: translate(-50%, -50%) scale(1) rotate(0deg); 
+                filter: blur(0.5px);
             }
             100% { 
                 opacity: 0;
-                /* Отлетает в случайном направлении */
-                transform: translate(calc(var(--randX) * 100px), calc(var(--randY) * 100px)) rotateZ(calc(var(--randR) * 360deg)) scale(0.1);
+                /* Резкое масштабирование (имитация входа), легкое вращение */
+                transform: translate(-50%, -50%) scale(50) rotate(15deg); 
+                filter: blur(5px);
             }
         }
 
-        /* Анимация глитча */
-        @keyframes glitch {
-            /* ... (предыдущие стили глитча) */
-            0% { transform: translate(-50%, -50%) skew(0deg); opacity: 0.9;}
-            10%, 30%, 50%, 70%, 90% { transform: translate(-50%, -50%) skew(-1deg) translateX(3px); opacity: 0.8;}
-            20%, 40%, 60%, 80% { transform: translate(-50%, -50%) skew(2deg) translateX(-2px); opacity: 0.85;}
-            100% { transform: translate(-50%, -50%) skew(0deg); opacity: 1;}
+        /* Применяем новую анимацию, когда слово готово к переходу */
+        .final-word.enter-portal {
+            animation: enterPortal 0.7s cubic-bezier(0.5, 0.05, 0.9, 0.9) forwards; /* Быстрая и агрессивная кривая */
+            text-shadow: none !important; /* Убираем глитч */
+            color: #ffffff !important; /* Убедимся, что цвет белый */
         }
 
-        .final-word.glitching {
-            animation: glitch 0.2s infinite; 
+        /* Стиль для каждой буквы. Убраны стили деконструкции. */
+        .word-char {
+            display: inline-block;
+            opacity: 1;
+            transition: opacity 0.5s;
         }
         
         /* ЭФФЕКТ БЕЛОЙ ВСПЫШКИ */
@@ -306,7 +267,7 @@
             margin-top: 200px; 
             position: relative; 
             z-index: 20;
-           
+            
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -316,7 +277,12 @@
         }
         
         .main-content.active { opacity: 1 !important; } 
-           
+        /* --- НОВЫЕ СТИЛИ ДЛЯ ТЕКСТА ОПИСАНИЯ --- */
+        .main-content p.subtext {
+            font-weight: 550; /* <--- ДОБАВЛЕНО/ИЗМЕНЕНО: ЭТО ДЕЛАЕТ ТЕКСТ ЖИРНЕЕ */
+            font-size: 1.1rem;
+        }
+
         /* ====================
            5.1. ЭСТЕТИКА ПРОТОКОЛА (Лого и кнопка)
            ==================== */
@@ -372,19 +338,14 @@
         .logo {
             width: 100%;
             height: 100%;
-            background-image: url('RivestorLogo.png');
+            /* Предполагаем, что изображение RivestorLogo.png доступно */
+            background-image: url('RivestorLogo.png'); 
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             position: relative;
         }
         
-        /* Сканирование логотипа УБРАНО */
-        .logo::after {
-            content: none;
-        }
-
-
         .cta-button {
             padding: 20px 40px;
             font-size: 1.2rem;
@@ -421,7 +382,7 @@
             text-align: center;
             font-size: 0.75rem;
             color: #999999;
-            opacity: 0.7; /* Всегда видим, пока не белая фаза */
+            opacity: 0.7; 
             transition: color 0.5s, opacity 1.0s ease-out;
             z-index: 50;
             font-family: 'Consolas', 'Courier New', monospace;
@@ -448,8 +409,6 @@
     </style>
 </head>
 <body>
-    
-    <div id="custom-cursor"></div>
     
     <div class="intro-words" id="intro-words">
         <div class="word-container">
@@ -495,13 +454,15 @@
             const ctaButton = document.getElementById('initiate-access-button');
             const systemFooter = document.getElementById('system-footer');
             const targetURL = 'ВАША_ССЫЛКА_СЮДА'; 
-            const customCursor = document.getElementById('custom-cursor'); 
             
+            // --- КОНЦЕПТЫ: AUTONOMY (удаляется), FREEDOM (удаляется) ---
             const concepts = [
-                "AUTONOMY",
-                "YIELD",
-                "PROTOCOL"
+                "AUTONOMY", 
+                "FREEDOM"   
             ];
+            
+            const DESTRUCT_WORD = "RIVESTOR"; 
+            
             const flashWords = ["RISK", "VOLATILITY", "CONNECTING", "DECODING", "TARGET", "UNCERTAIN", "PROTOCOL", "QUERY"];
             const eprMessages = ["EPR_INITIATED", "CLEANING_CACHE", "ERROR_FOUND", "SEC_PROTOCOL_FAIL", "SYNC_LOST"];
             
@@ -511,45 +472,12 @@
             let flashInterval;
             let logInterval;
 
-            // --- ИНИЦИАЛИЗАЦИЯ: РАЗБИВКА СЛОВА FREEDOM НА БУКВЫ ---
-            const finalWordText = "FREEDOM";
-            finalWord.innerHTML = finalWordText.split('').map(char => {
+            // --- ИНИЦИАЛИЗАЦИЯ: РАЗБИВКА СЛОВА RIVESTOR НА БУКВЫ ---
+            finalWord.innerHTML = DESTRUCT_WORD.split('').map(char => {
                 if (char === ' ') return '<span class="word-char">&nbsp;</span>';
                 return `<span class="word-char">${char}</span>`;
             }).join('');
 
-
-            // --- ФУНКЦИЯ: ТРАССИРОВКА КУРСОРА ---
-            function createTrail(x, y) {
-                const trail = document.createElement('div');
-                trail.classList.add('cursor-trail');
-                trail.style.left = `${x}px`;
-                trail.style.top = `${y}px`;
-                
-                // Начальные стили
-                trail.style.opacity = 0.5;
-                trail.style.transform = `translate(-50%, -50%) scale(1.2)`;
-                body.appendChild(trail);
-                
-                // Анимация исчезновения
-                setTimeout(() => {
-                    trail.style.opacity = 0;
-                    trail.style.transform = `translate(-50%, -50%) scale(0.1)`;
-                }, 50); // Быстрый взрыв
-                
-                setTimeout(() => {
-                    trail.remove();
-                }, 550); 
-            }
-
-            document.addEventListener('mousemove', (e) => {
-                customCursor.style.left = `${e.clientX}px`;
-                customCursor.style.top = `${e.clientY}px`;
-                
-                if (!body.classList.contains('white-phase')) {
-                    createTrail(e.clientX, e.clientY);
-                }
-            });
 
             // --- ФУНКЦИЯ: ДИНАМИЧЕСКИЕ ЛОГИ В ФУТЕРЕ ---
             function updateSystemLog() {
@@ -580,7 +508,7 @@
             }
 
 
-            // --- ФУНКЦИЯ: ГЕНЕРАЦИЯ ШУМА И ЭПР ---
+            // --- ФУНКЦИЯ: ГЕНЕРАЦИЯ ШУМА И ЭФФЕКТОВ ---
             function generateFlashWord() {
                 const isEPR = Math.random() < 0.15; 
                 
@@ -601,36 +529,46 @@
                 setTimeout(() => { span.remove(); }, 800); 
             }
 
-            // Функция Набора и Удаления с "Зависанием" (Typing Lag)
+            // --- ФУНКЦИЯ: НАБОР И УДАЛЕНИЕ ---
             function typeWriter() {
                 if (!flashInterval) {
                     flashInterval = setInterval(generateFlashWord, 100); 
-                    logInterval = setInterval(updateSystemLog, 1500); // Запускаем логи
+                    logInterval = setInterval(updateSystemLog, 1500); 
                 }
                 
                 const currentText = concepts[conceptIndex];
+                const isLastConcept = conceptIndex === concepts.length - 1; 
                 
                 if (!isDeleting) {
+                    // Набор
                     typingTarget.textContent = currentText.substring(0, charIndex + 1);
                     charIndex++;
                 } else {
+                    // Удаление 
                     typingTarget.textContent = currentText.substring(0, charIndex - 1);
                     charIndex--;
                 }
                 
                 if (charIndex === currentText.length) {
+                    // Слово набрано. Начинаем удаление.
                     isDeleting = true;
                     setTimeout(typeWriter, 1000); 
+                    
                 } else if (isDeleting && charIndex === 0) {
-                    isDeleting = false;
-                    conceptIndex++;
-                    if (conceptIndex < concepts.length) {
-                        setTimeout(typeWriter, 500); 
-                    } else {
-                        clearInterval(flashInterval); 
-                        clearInterval(logInterval); // Останавливаем логи
-                        setTimeout(startFreedomDeconstruction, 500); // Начинаем разрушение
+                    
+                    if (isLastConcept) {
+                        // FREEDOM удален. Финал.
+                        cursorTarget.style.display = 'none'; 
+                        clearInterval(flashInterval);         
+                        clearInterval(logInterval);           
+                        
+                        setTimeout(startRivesorDestruction, 500); // Переход к разрушению RIVESTOR
                         return;
+                    } else {
+                        // AUTONOMY удален. Переход к FREEDOM.
+                        isDeleting = false;
+                        conceptIndex++;
+                        setTimeout(typeWriter, 500); 
                     }
                 } else {
                     let baseSpeed = isDeleting ? 50 : 100;
@@ -641,33 +579,36 @@
                 }
             }
 
-            // --- ФУНКЦИЯ: РАЗРУШЕНИЕ FREEDOM И ПЕРЕХОД К БЕЛОЙ ФАЗЕ ---
-            function startFreedomDeconstruction() {
-                cursorTarget.style.display = 'none';
-                typingTarget.style.display = 'none';
+            // --- ФУНКЦИЯ: РАЗРУШЕНИЕ RIVESTOR (С КОМФОРТНОЙ ПАУЗОЙ И ЧЕТКОСТЬЮ) ---
+            function startRivesorDestruction() {
+                // RIVESTOR появляется в центре
                 finalWord.style.opacity = 1;
                 finalWord.style.fontSize = '5rem';
-                finalWord.classList.add('glitching'); 
-
-                // Установка случайных переменных для каждой буквы перед разрушением
-                const chars = finalWord.querySelectorAll('.word-char');
-                chars.forEach(char => {
-                    char.style.setProperty('--randX', (Math.random() - 0.5) * 2);
-                    char.style.setProperty('--randY', (Math.random() - 0.5) * 2);
-                    char.style.setProperty('--randR', Math.random() - 0.5);
-                });
+                // Сначала чисто, без глитча
+                finalWord.style.textShadow = 'none'; 
+                finalWord.style.filter = 'none';
                 
+                // --- Фаза 1: Читаемая пауза (1.5 секунды) ---
                 setTimeout(() => {
-                    finalWord.classList.remove('glitching'); 
-                    finalWord.classList.add('deconstruct'); // Начинаем деконструкцию
                     
+                    // --- Фаза 2: Активируем Глитч (1.5 секунды) ---
+                    finalWord.classList.add('glitching'); 
+
                     setTimeout(() => {
-                        // Вспышка и переход
-                        introContainer.style.display = 'none'; 
-                        startWhitePhaseTransition();
                         
-                    }, 1500); // Достаточно времени для завершения анимации разрушения
-                }, 1000); 
+                        // --- Фаза 3: ВХОД В ЭКРАН (Новая логика) ---
+                        finalWord.classList.remove('glitching'); 
+                        finalWord.classList.add('enter-portal'); // Активируем анимацию масштабирования
+                        
+                        // Длительность анимации "входа" - 700 миллисекунд (из CSS)
+                        setTimeout(() => {
+                            // Вспышка и переход
+                            introContainer.style.display = 'none'; 
+                            startWhitePhaseTransition();
+                            
+                        }, 700); // 700ms - Длительность анимации enterPortal
+                    }, 1500); // Длительность глитча
+                }, 1500); // Пауза для чтения
             }
 
             // --- ФУНКЦИЯ: ПЛАВНЫЙ ПЕРЕХОД К БЕЛОМУ ФОНУ ---
