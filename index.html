@@ -16,14 +16,101 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #000000; /* Начальный черный фон */
+            background-color: #000000; 
             color: #ffffff;
             text-align: center;
             overflow: hidden;
             position: relative;
-            transition: background-color 0.1s; /* Для резкого перехода */
+            transition: background-color 0.5s ease-out; 
+            flex-direction: column; 
+            cursor: none !important; 
         }
 
+        /* ====================
+           1.1. МАТРИЧНЫЙ ДОЖДЬ
+           ==================== */
+        @keyframes digitalRain {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 500vh; }
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+            pointer-events: none;
+            opacity: 0.05; 
+            background: repeating-linear-gradient(
+                to bottom,
+                #00ff00 0,
+                #00ff00 1px,
+                transparent 1px,
+                transparent 20px
+            );
+            background-size: 100% 20px;
+            animation: digitalRain 60s linear infinite;
+        }
+        
+        body.white-phase::before {
+            display: none;
+        }
+
+        /* ====================
+           1.2. КАСТОМНЫЙ КУРСОР (КРЕСТИК)
+           ==================== */
+        #custom-cursor {
+            width: 15px; 
+            height: 15px;
+            border: 1px solid #ffffff; 
+            position: fixed;
+            z-index: 10000;
+            pointer-events: none; 
+            transform: translate(-50%, -50%); 
+            transition: border-color 0.3s;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            background-image: none;
+        }
+        #custom-cursor::before,
+        #custom-cursor::after {
+            content: '';
+            position: absolute;
+            background: #ffffff;
+        }
+        #custom-cursor::before {
+            width: 1px; height: 100%; left: 50%; top: 0; transform: translateX(-50%);
+        }
+        #custom-cursor::after {
+            width: 100%; height: 1px; top: 50%; left: 0; transform: translateY(-50%);
+        }
+
+        body.white-phase #custom-cursor {
+            border-color: #000000;
+            box-shadow: none; 
+        }
+        body.white-phase #custom-cursor::before,
+        body.white-phase #custom-cursor::after {
+            background: #000000;
+        }
+        
+        /* ТРАССИРОВКА КУРСОРА (Новый эффект) */
+        .cursor-trail {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #00bfff; /* Яркий голубой */
+            box-shadow: 0 0 10px #00bfff;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        
         /* Общий контейнер для слов в первой фазе */
         .intro-words {
             position: absolute;
@@ -31,14 +118,42 @@
         }
 
         /* ====================
-           2. ФАЗА 1: НАБОР И УДАЛЕНИЕ (TYPE/DELETE EFFECT)
+           1.3. ФОНОВОЕ СКАНИРОВАНИЕ
+           ==================== */
+        @keyframes scanlineMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
+        .intro-words::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0.1; 
+            
+            background: repeating-linear-gradient(
+                #ffffff 0 1px, 
+                transparent 1px 15px
+            );
+            background-size: 100% 15px; 
+            animation: scanlineMove 5s linear infinite; 
+        }
+
+
+        /* ====================
+           2. ФАЗА 1: НАБОР И УДАЛЕНИЕ
            ==================== */
         .word-container {
-            font-size: 5.5rem; /* Очень крупный шрифт */
+            font-size: 5.5rem; 
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            display: flex; /* Для курсора */
+            display: flex; 
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -49,10 +164,9 @@
             overflow: hidden;
             white-space: nowrap;
             display: inline-block;
-            opacity: 0; /* Скрыто до начала анимации */
+            opacity: 0; 
         }
         
-        /* Мигающий курсор */
         .cursor {
             border-right: 0.15em solid #ffffff; 
             animation: blink-caret 0.75s step-end infinite;
@@ -65,107 +179,194 @@
         }
 
         /* ====================
-           3. ФАЗА 1.5: 3D-ВСПЫШКА (СЛОВО FREEDOM)
+           3.1. ШУМ ДАННЫХ И ЭФФЕКТ ЭПР
+           ==================== */
+        .flash-words-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 150; 
+            pointer-events: none; 
+        }
+
+        .flash-word {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: 700;
+            opacity: 0;
+            text-transform: uppercase;
+            font-family: 'Consolas', 'Courier New', monospace;
+            animation: flashWord 0.8s ease-out forwards;
+        }
+        
+        .flash-word.noise {
+             color: rgba(255, 255, 255, 0.5); 
+        }
+        
+        .flash-word.epr {
+            color: #ff0000; 
+            font-size: 1rem;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.5));
+        }
+
+        @keyframes flashWord {
+            0% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-50px); filter: blur(2px); }
+        }
+
+        /* ====================
+           3.2. ФАЗА 1.5: РАЗРУШЕНИЕ FREEDOM
            ==================== */
         .final-word {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 0; /* Изначально скрыто */
+            font-size: 0; 
             font-weight: 900;
             text-transform: uppercase;
             color: #ffffff;
             z-index: 200;
             opacity: 0;
+            display: flex; /* Для деконструкции */
         }
 
-        @keyframes finalExplosion {
+        /* Стиль для каждой буквы при разрушении */
+        .word-char {
+            display: inline-block;
+            opacity: 1;
+            transition: transform 1.5s, opacity 1.5s;
+        }
+
+        .final-word.deconstruct .word-char {
+            animation: deconstructChar 1.5s forwards;
+        }
+
+        @keyframes deconstructChar {
             0% { 
-                font-size: 5rem; 
-                opacity: 1; 
-                filter: blur(0px); 
-                transform: translate(-50%, -50%) perspective(100px) translateZ(0);
-            }
-            80% { 
-                font-size: 200vw; /* ОГРОМНЫЙ РАЗМЕР */
-                opacity: 1; 
-                filter: blur(5px); 
-                transform: translate(-50%, -50%) perspective(100px) translateZ(100px); /* 3D-эффект */
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
             }
             100% { 
-                font-size: 200vw; 
-                opacity: 0; 
-                filter: blur(10px); 
-                background-color: #ffffff; 
+                opacity: 0;
+                /* Отлетает в случайном направлении */
+                transform: translate(calc(var(--randX) * 100px), calc(var(--randY) * 100px)) rotateZ(calc(var(--randR) * 360deg)) scale(0.1);
             }
         }
-        
-        .final-word.explode {
-            animation: finalExplosion 1.0s ease-in forwards;
-            animation-delay: 0.2s;
-        }
-        
-        /* ====================
-           3.5. АНИМАЦИЯ ПУЛЬСАЦИИ ЛОГОТИПА (УМЕНЬШЕНАЯ)
-           ==================== */
-        @keyframes heartBeat {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            15% { transform: translate(-50%, -50%) scale(1.01); } /* Уменьшено: 1% увеличение */
-            30% { transform: translate(-50%, -50%) scale(1); }
-            45% { transform: translate(-50%, -50%) scale(1.02); } /* Уменьшено: 2% увеличение */
-            60% { transform: translate(-50%, -50%) scale(1); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+
+        /* Анимация глитча */
+        @keyframes glitch {
+            /* ... (предыдущие стили глитча) */
+            0% { transform: translate(-50%, -50%) skew(0deg); opacity: 0.9;}
+            10%, 30%, 50%, 70%, 90% { transform: translate(-50%, -50%) skew(-1deg) translateX(3px); opacity: 0.8;}
+            20%, 40%, 60%, 80% { transform: translate(-50%, -50%) skew(2deg) translateX(-2px); opacity: 0.85;}
+            100% { transform: translate(-50%, -50%) skew(0deg); opacity: 1;}
         }
 
+        .final-word.glitching {
+            animation: glitch 0.2s infinite; 
+        }
+        
+        /* ЭФФЕКТ БЕЛОЙ ВСПЫШКИ */
+        .flash-white-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            opacity: 0;
+            z-index: 350; 
+            pointer-events: none;
+            animation: flash 0.3s ease-out forwards;
+        }
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+
         /* ====================
-           4. ФАЗА 2: БЕЛЫЙ ЭКРАН / КОНТЕНТ
+           5. ФАЗА 3: БЕЛЫЙ ЭКРАН / КОНТЕНТ
            ==================== */
         
         body.white-phase {
-            background-color: #ffffff;
-            color: #000000;
-        }
-
-        .main-content {
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out 0.1s; 
-            max-width: 800px;
-            padding: 40px 20px;
-            margin-top: 200px; /* Сдвиг текста вниз */
-            position: relative; 
-            z-index: 20;
-                   
+            background-color: #ffffff !important; 
+            color: #000000 !important;           
         }
         
-        .main-content.active {
-            opacity: 1;
+        .main-content {
+            opacity: 0; 
+            max-width: 800px;
+            padding: 40px 20px;
+            margin-top: 200px; 
+            position: relative; 
+            z-index: 20;
+           
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 50px; 
+            
+            transition: opacity 1.5s ease-out; 
         }
-
-        /* ЛОГОТИП (750px) */
+        
+        .main-content.active { opacity: 1 !important; } 
+           
+        /* ====================
+           5.1. ЭСТЕТИКА ПРОТОКОЛА (Лого и кнопка)
+           ==================== */
+        
+        @keyframes heartBeat {
+            0% { transform: translate(-50%, -50%) scale(0.8); } 
+            15% { transform: translate(-50%, -50%) scale(0.808); } 
+            30% { transform: translate(-50%, -50%) scale(0.8); }
+            45% { transform: translate(-50%, -50%) scale(0.816); } 
+            60% { transform: translate(-50%, -50%) scale(0.8); }
+            100% { transform: translate(-50%, -50%) scale(0.8); }
+        }
+        
         .logo-wrapper {
             width: 750px; 
             height: 750px;
-    
             position: absolute;
-            top: -20%; /* Сдвиг логотипа вверх */
+            top: -20%; 
             left: 50%; 
-            transform: translate(-50%, -50%) scale(0.6); 
-    
+            transform: translate(-50%, -50%) scale(0.5); 
             z-index: 1; 
-    
             opacity: 0;
-            /* Плавное увеличение */
             transition: opacity 1.5s ease-out, transform 1.5s ease-out; 
             pointer-events: none;
         }
 
+        .logo-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%; 
+            height: 100%;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(0, 150, 255, 0.1); 
+            border: 1px solid rgba(0, 150, 255, 0.1); 
+            opacity: 0;
+            transition: opacity 1.5s ease-out;
+            z-index: -1; 
+        }
+
         .logo-wrapper.active {
             opacity: 1;
-            /* Плавное увеличение до 1 */
-            transform: translate(-50%, -50%) scale(1); 
-            /* Пульсация начнется через 1.5 секунды, когда увеличение завершится */
+            transform: translate(-50%, -50%) scale(0.8); 
             animation: heartBeat 4s ease-in-out 1.5s infinite; 
+            filter: drop-shadow(0 0 8px rgba(0, 150, 255, 0.5)); 
+        }
+        .logo-wrapper.active::after {
+            opacity: 1;
         }
         
         .logo {
@@ -175,24 +376,15 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            position: relative;
+        }
+        
+        /* Сканирование логотипа УБРАНО */
+        .logo::after {
+            content: none;
         }
 
-        /* ТЕКСТ (ВАШ ОРИГИНАЛ) */
-        .headline {
-            font-size: 4.5rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
 
-        .subtext {
-            font-size: 1.25rem;
-            color: #444;
-            margin-bottom: 50px;
-        }
-
-        /* КНОПКА (СВЕЧЕНИЕ И ЗАКРУГЛЕНИЕ) */
         .cta-button {
             padding: 20px 40px;
             font-size: 1.2rem;
@@ -204,53 +396,68 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             
-            /* НОВЫЕ СТИЛИ ДЛЯ КНОПКИ */
-            border-radius: 8px; /* ЗАКРУГЛЕННЫЕ УГЛЫ */
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4); /* ЛЕГКОЕ СВЕЧЕНИЕ */
+            border-radius: 8px; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4); 
 
             transition: background-color 0.1s, transform 0.1s, box-shadow 0.3s;
+        }
+
+        .cta-button.accepted {
+            background-color: #008000; 
+            box-shadow: 0 0 20px rgba(0, 200, 0, 0.8);
+            color: #ffffff;
         }
 
         .cta-button:hover {
             background-color: #333333;
             transform: scale(0.98);
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7); /* Свечение при наведении */
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7); 
+        }
+
+        #system-footer {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #999999;
+            opacity: 0.7; /* Всегда видим, пока не белая фаза */
+            transition: color 0.5s, opacity 1.0s ease-out;
+            z-index: 50;
+            font-family: 'Consolas', 'Courier New', monospace;
+            white-space: nowrap;
+        }
+        body.white-phase #system-footer {
+            opacity: 1; 
+            color: #333333; 
         }
         
         /* ====================
-           5. МЕДИА-ЗАПРОСЫ (АДАПТИВНОСТЬ)
+           6. МЕДИА-ЗАПРОСЫ (АДАПТИВНОСТЬ)
            ==================== */
         @media (max-width: 768px) {
             .word-container { font-size: 3rem; }
-            
             .headline { font-size: 2.5rem; margin-bottom: 20px;}
             .subtext { font-size: 1rem; margin-bottom: 30px; }
-            
-            .main-content { 
-                padding: 20px;
-                margin-top: 50px; /* Меньший сдвиг вниз для мобильных */
-            }
-
-            /* АДАПТАЦИЯ ЛОГО ДЛЯ МОБИЛЬНЫХ */
-            .logo-wrapper { 
-                width: 400px; 
-                height: 400px;
-                top: -15%; /* Сдвиг логотипа выше на маленьких экранах */
-            }
+            .main-content { padding: 20px; margin-top: 50px; }
+            .logo-wrapper { width: 400px; height: 400px; top: -15%; transform: translate(-50%, -50%) scale(0.7); }
             .final-word { font-size: 3.5rem; }
             .cta-button { padding: 15px 30px; font-size: 1rem; }
+            #system-footer { bottom: 5px; font-size: 0.6rem; }
         }
     </style>
 </head>
 <body>
+    
+    <div id="custom-cursor"></div>
     
     <div class="intro-words" id="intro-words">
         <div class="word-container">
             <span class="typing-text" id="typing-text-target"></span>
             <span class="cursor" id="cursor-target"></span>
         </div>
-        <div class="final-word" id="final-word">FREEDOM</div>
-    </div>
+        <div class="flash-words-container" id="flash-words-container"></div>
+        <div class="final-word" id="final-word"></div> </div>
     
     <div class="main-content" id="main-content">
         
@@ -266,10 +473,14 @@
             Rivestor is building a platform to create, manage, and grow decentralized funds powered by AI and on-chain transparency. Enter your email below to get exclusive updates and early access to the platform.
         </p>
 
-        <button type="button" class="cta-button" onclick="window.location.href='ВАША_ССЫЛКА_СЮДА'">
+        <button type="button" class="cta-button" id="initiate-access-button">
             INITIATE ACCESS
         </button>
     </div>
+
+    <footer id="system-footer">
+        // Rivestor.ai_Core_v2.1 // Access Level: Public Initiator
+    </footer>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -280,19 +491,123 @@
             const introContainer = document.getElementById('intro-words');
             const mainContent = document.getElementById('main-content');
             const logo = document.getElementById('logo-wrapper');
+            const flashWordsContainer = document.getElementById('flash-words-container');
+            const ctaButton = document.getElementById('initiate-access-button');
+            const systemFooter = document.getElementById('system-footer');
+            const targetURL = 'ВАША_ССЫЛКА_СЮДА'; 
+            const customCursor = document.getElementById('custom-cursor'); 
             
             const concepts = [
                 "AUTONOMY",
                 "YIELD",
+                "PROTOCOL"
             ];
-            const finalConcept = "FREEDOM";
-
+            const flashWords = ["RISK", "VOLATILITY", "CONNECTING", "DECODING", "TARGET", "UNCERTAIN", "PROTOCOL", "QUERY"];
+            const eprMessages = ["EPR_INITIATED", "CLEANING_CACHE", "ERROR_FOUND", "SEC_PROTOCOL_FAIL", "SYNC_LOST"];
+            
             let conceptIndex = 0;
             let charIndex = 0;
             let isDeleting = false;
+            let flashInterval;
+            let logInterval;
 
-            // Функция Набора и Удаления
+            // --- ИНИЦИАЛИЗАЦИЯ: РАЗБИВКА СЛОВА FREEDOM НА БУКВЫ ---
+            const finalWordText = "FREEDOM";
+            finalWord.innerHTML = finalWordText.split('').map(char => {
+                if (char === ' ') return '<span class="word-char">&nbsp;</span>';
+                return `<span class="word-char">${char}</span>`;
+            }).join('');
+
+
+            // --- ФУНКЦИЯ: ТРАССИРОВКА КУРСОРА ---
+            function createTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.classList.add('cursor-trail');
+                trail.style.left = `${x}px`;
+                trail.style.top = `${y}px`;
+                
+                // Начальные стили
+                trail.style.opacity = 0.5;
+                trail.style.transform = `translate(-50%, -50%) scale(1.2)`;
+                body.appendChild(trail);
+                
+                // Анимация исчезновения
+                setTimeout(() => {
+                    trail.style.opacity = 0;
+                    trail.style.transform = `translate(-50%, -50%) scale(0.1)`;
+                }, 50); // Быстрый взрыв
+                
+                setTimeout(() => {
+                    trail.remove();
+                }, 550); 
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                customCursor.style.left = `${e.clientX}px`;
+                customCursor.style.top = `${e.clientY}px`;
+                
+                if (!body.classList.contains('white-phase')) {
+                    createTrail(e.clientX, e.clientY);
+                }
+            });
+
+            // --- ФУНКЦИЯ: ДИНАМИЧЕСКИЕ ЛОГИ В ФУТЕРЕ ---
+            function updateSystemLog() {
+                const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const logType = Math.random() < 0.2 ? 'ERROR' : Math.random() < 0.6 ? 'PING' : 'VALIDATION';
+                let message;
+                let color = '#999999';
+
+                switch(logType) {
+                    case 'PING':
+                        const latency = Math.floor(Math.random() * 50) + 10;
+                        message = `PING ${latency}ms TO PROTOCOL_CORE`;
+                        break;
+                    case 'VALIDATION':
+                        const block = Math.floor(Math.random() * 100000) + 900000;
+                        message = `VALIDATING BLOCK ${block}... OK`;
+                        color = '#00ffff'; 
+                        break;
+                    case 'ERROR':
+                        const errorMsg = ['SYNC_LOST', 'ACCESS_DENIED', 'CONNECTION_FAIL'][Math.floor(Math.random() * 3)];
+                        message = `WARNING: ${errorMsg}`;
+                        color = '#ff0000';
+                        break;
+                }
+                
+                systemFooter.innerHTML = `// [TS:${timestamp}] ${message} // Access Level: Public Initiator`;
+                systemFooter.style.color = color;
+            }
+
+
+            // --- ФУНКЦИЯ: ГЕНЕРАЦИЯ ШУМА И ЭПР ---
+            function generateFlashWord() {
+                const isEPR = Math.random() < 0.15; 
+                
+                const word = isEPR 
+                    ? eprMessages[Math.floor(Math.random() * eprMessages.length)]
+                    : flashWords[Math.floor(Math.random() * flashWords.length)];
+                    
+                const span = document.createElement('span');
+                span.classList.add('flash-word', isEPR ? 'epr' : 'noise');
+                span.textContent = `[${word}]`;
+                
+                const x = Math.random() * 90;
+                const y = Math.random() * 90;
+                span.style.left = `${x}vw`;
+                span.style.top = `${y}vh`;
+                
+                flashWordsContainer.appendChild(span);
+                setTimeout(() => { span.remove(); }, 800); 
+            }
+
+            // Функция Набора и Удаления с "Зависанием" (Typing Lag)
             function typeWriter() {
+                if (!flashInterval) {
+                    flashInterval = setInterval(generateFlashWord, 100); 
+                    logInterval = setInterval(updateSystemLog, 1500); // Запускаем логи
+                }
+                
                 const currentText = concepts[conceptIndex];
                 
                 if (!isDeleting) {
@@ -302,54 +617,95 @@
                     typingTarget.textContent = currentText.substring(0, charIndex - 1);
                     charIndex--;
                 }
-
+                
                 if (charIndex === currentText.length) {
                     isDeleting = true;
                     setTimeout(typeWriter, 1000); 
                 } else if (isDeleting && charIndex === 0) {
                     isDeleting = false;
                     conceptIndex++;
-                    
                     if (conceptIndex < concepts.length) {
                         setTimeout(typeWriter, 500); 
                     } else {
-                        setTimeout(startFinalPhase, 500);
+                        clearInterval(flashInterval); 
+                        clearInterval(logInterval); // Останавливаем логи
+                        setTimeout(startFreedomDeconstruction, 500); // Начинаем разрушение
                         return;
                     }
                 } else {
-                    const speed = isDeleting ? 50 : 100;
+                    let baseSpeed = isDeleting ? 50 : 100;
+                    let randomLag = Math.random() < 0.15 ? Math.random() * 300 : 0;
+                    const speed = baseSpeed + randomLag;
+                    
                     setTimeout(typeWriter, speed);
                 }
             }
 
-            // Функция Финальной 3D-Вспышки
-            function startFinalPhase() {
+            // --- ФУНКЦИЯ: РАЗРУШЕНИЕ FREEDOM И ПЕРЕХОД К БЕЛОЙ ФАЗЕ ---
+            function startFreedomDeconstruction() {
                 cursorTarget.style.display = 'none';
                 typingTarget.style.display = 'none';
-                
                 finalWord.style.opacity = 1;
                 finalWord.style.fontSize = '5rem';
+                finalWord.classList.add('glitching'); 
+
+                // Установка случайных переменных для каждой буквы перед разрушением
+                const chars = finalWord.querySelectorAll('.word-char');
+                chars.forEach(char => {
+                    char.style.setProperty('--randX', (Math.random() - 0.5) * 2);
+                    char.style.setProperty('--randY', (Math.random() - 0.5) * 2);
+                    char.style.setProperty('--randR', Math.random() - 0.5);
+                });
                 
                 setTimeout(() => {
-                    finalWord.classList.add('explode');
+                    finalWord.classList.remove('glitching'); 
+                    finalWord.classList.add('deconstruct'); // Начинаем деконструкцию
                     
                     setTimeout(() => {
-                        body.classList.add('white-phase');
-                        introContainer.style.display = 'none';
+                        // Вспышка и переход
+                        introContainer.style.display = 'none'; 
+                        startWhitePhaseTransition();
                         
-                        // Лого и контент появляются одновременно
-                        mainContent.classList.add('active');
-                        logo.classList.add('active');
-                        
-                    }, 800);
+                    }, 1500); // Достаточно времени для завершения анимации разрушения
+                }, 1000); 
+            }
 
-                }, 200);
+            // --- ФУНКЦИЯ: ПЛАВНЫЙ ПЕРЕХОД К БЕЛОМУ ФОНУ ---
+            function startWhitePhaseTransition() {
+                const flash = document.createElement('div');
+                flash.classList.add('flash-white-overlay');
+                body.appendChild(flash);
+
+                setTimeout(() => {
+                    flash.remove(); 
+                    body.classList.add('white-phase'); 
+                    mainContent.classList.add('active'); // Активируем контент
+                    logo.classList.add('active');
+                    systemFooter.style.color = '#333333'; // Меняем цвет лога
+                }, 300); 
+            }
+
+            // --- ЛОГИКА ДЛЯ КНОПКИ ---
+            if (ctaButton) {
+                ctaButton.addEventListener('click', () => {
+                    ctaButton.textContent = '[INPUT ACCEPTED]';
+                    ctaButton.classList.add('accepted');
+                    ctaButton.disabled = true; 
+                    setTimeout(() => {
+                        ctaButton.classList.remove('accepted');
+                        ctaButton.style.backgroundColor = '#333333'; 
+                        ctaButton.textContent = '[PROTOCOL ACTIVE]';
+                        setTimeout(() => {
+                            window.location.href = targetURL; 
+                        }, 500); 
+                    }, 500);
+                });
             }
 
             // Инициализация
             typingTarget.style.opacity = 1;
             typeWriter();
-
+            updateSystemLog(); // Начальное сообщение в футере
         });
     </script>
 </body>
